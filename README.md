@@ -2,6 +2,8 @@ MoviesBuzz 🎬🍿
 
 MoviesBuzz is a feature-rich, modern, and fully responsive movie ticket booking web application built with clean HTML5, Tailwind CSS, and vanilla JavaScript. Designed to offer a premium user experience similar to BookMyShow, it features real Hollywood & Bollywood movie catalogs, dynamic showtime filters, 20+ Indian city location switching, tiered auditorium seating, live GST price calculation, authentication gating, and instant QR ticket confirmation.
 
+🚀 Click Here to Launch Live Demo :-  https://manoj1125.github.io/Movie-Seat-Booking-App/
+
 🌟 Key Features
 
 🏙️ 20+ Indian Cities Location Switcher: Dynamically select cities like Mumbai, Delhi-NCR, Bengaluru, Hyderabad, Rourkela, Pune, and more to update theater choices instantly.
@@ -47,12 +49,12 @@ moviesbuzz/
 
 Clone the Repository:
 
-git clone https://github.com/your-username/moviesbuzz.git
+git clone https://github.com/manoj1125/Movie-Seat-Booking-App.git
 
 
 Navigate into Project Directory:
 
-cd moviesbuzz
+cd Movie-Seat-Booking-App
 
 
 Run the Application:
