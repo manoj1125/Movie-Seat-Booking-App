@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoviesBuzz - Movie Ticket Booking</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- External CSS -->
+  <link rel="stylesheet" href="stylesheet.css" />
+  <!-- External JS -->
+  <script src="seat.js" defer></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bmsRed: '#F02849',
+            bmsRedHover: '#D01E3C',
+            bmsDark: '#0F172A',
+            bmsCard: '#1E293B',
+            bmsSeatAvailable: '#FFFFFF',
+            bmsSeatSelected: '#1EA83C',
+            bmsSeatOccupied: '#475569',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-bmsDark text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-bmsRed selection:text-white">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-6">
+          <a href="#" class="flex items-center gap-2 text-2xl font-black tracking-wider text-white">
+            <span class="bg-bmsRed text-white px-2.5 py-1 rounded-lg italic font-extrabold shadow-lg shadow-bmsRed/30">mb</span>
+            <span class="hidden sm:inline font-bold tracking-tight text-xl">MoviesBuzz</span>
+          </a>
+
+          <!-- Search Bar -->
+          <div class="hidden md:flex items-center bg-slate-800/80 border border-slate-700/60 rounded-md px-3 py-1.5 w-72 lg:w-96 text-sm focus-within:border-bmsRed transition">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 mr-2.5"></i>
+            <input type="text" id="searchInput" placeholder="Search for Movies, Events, Plays & Sports" class="bg-transparent text-white placeholder-slate-400 focus:outline-none w-full" />
+          </div>
+        </div>
+
+        <!-- Right Side Controls: City, Auth Header -->
+        <div class="flex items-center gap-4">
+          <!-- City Selector -->
+          <div class="relative">
+            <button id="citySelectBtn" onclick="toggleCityDropdown(event)" class="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white font-medium bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-md border border-slate-700 transition">
+              <i class="fa-solid fa-location-dot text-bmsRed"></i>
+              <span id="currentCity">Mumbai</span>
+              <i class="fa-solid fa-chevron-down text-xs text-slate-400 ml-1"></i>
+            </button>
+            <!-- City Dropdown with 20+ Cities -->
+            <div id="cityDropdown" class="hidden absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl py-2 z-50 max-h-80 overflow-y-auto">
+              <div class="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-700/60 pb-2 mb-1">
+                Select City in India
+              </div>
+              <div id="cityOptionsList" class="divide-y divide-slate-700/40">
+                <!-- Populated dynamically by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Auth Header Section (Guest & User States) -->
+          <div id="authHeaderSection">
+            <button id="signInHeaderBtn" onclick="openAuthModal('signin')" class="bg-bmsRed hover:bg-bmsRedHover text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow-md shadow-bmsRed/20">
+              Sign In
+            </button>
+            
+            <div id="userProfileDropdown" class="hidden relative">
+              <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                <div id="userAvatar" class="w-6 h-6 rounded-full bg-bmsRed text-white flex items-center justify-center font-bold text-xs uppercase">
+                  U
+                </div>
+                <span id="userNameDisplay" class="font-medium text-slate-200">User</span>
+                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+              </button>
+              
+              <!-- User Menu Dropdown -->
+              <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl py-1 z-50">
+                <div class="px-4 py-2 border-b border-slate-700/60">
+                  <p class="text-xs text-slate-400">Signed in as</p>
+                  <p id="userMenuEmail" class="text-xs font-medium text-white truncate"></p>
+                </div>
+                <button onclick="logoutUser()" class="w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-slate-700 flex items-center gap-2">
+                  <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- CATALOG VIEW SECTION -->
+    <section id="movieCatalogSection" class="space-y-6">
+      <!-- Filter Tabs & Sort Controls -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-6 text-sm font-semibold overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          <button onclick="filterCategory('all')" class="category-tab text-bmsRed border-b-2 border-bmsRed pb-0.5" data-category="all">All Movies</button>
+          <button onclick="filterCategory('hollywood')" class="category-tab text-slate-400 hover:text-white pb-0.5" data-category="hollywood">Hollywood</button>
+          <button onclick="filterCategory('bollywood')" class="category-tab text-slate-400 hover:text-white pb-0.5" data-category="bollywood">Bollywood</button>
+          <button onclick="filterCategory('imax')" class="category-tab text-slate-400 hover:text-white pb-0.5" data-category="imax">IMAX 3D</button>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span id="movieCountBadge" class="bg-slate-800 px-2.5 py-1 rounded-full text-slate-300 font-medium">10 Movies</span>
+          <button onclick="sortMoviesByRating()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-md transition border border-slate-700 flex items-center gap-1">
+            <i class="fa-solid fa-star text-amber-400"></i> Top Rated
+          </button>
+        </div>
+      </div>
+
+      <!-- Movie Cards Grid -->
+      <div id="moviesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+        <!-- Movies populated dynamically -->
+      </div>
+    </section>
+
+    <!-- BOOKING SEAT SELECTION VIEW SECTION -->
+    <section id="bookingSection" class="hidden space-y-6">
+      
+      <!-- Back Navigation Header -->
+      <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+        <button onclick="backToCatalog()" class="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-arrow-left"></i> Back to Movie List
+        </button>
+        <span class="text-xs font-medium text-slate-400">Step 2 of 2: Select Seats & Pay</span>
+      </div>
+
+      <!-- Main Booking Layout (Grid) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 8 Cols: Cinema Controls & Interactive Auditorium -->
+        <div class="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col space-y-6 shadow-xl">
+          
+          <!-- Cinema Venue, Date & Showtimes Selector -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-slate-800">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Cinema Hall</label>
+              <select id="cinemaSelect" onchange="onCinemaOrTimeChange()" class="w-full bg-slate-800 border border-slate-700 rounded-lg text-xs font-medium px-3 py-2 text-slate-200 focus:outline-none focus:border-bmsRed">
+                <option value="PVR: Phoenix Marketcity">PVR: Phoenix Marketcity</option>
+                <option value="INOX: Mall of Asia">INOX: Mall of Asia</option>
+                <option value="Cinepolis: Orion Mall">Cinepolis: Orion Mall</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Show Date</label>
+              <select id="dateSelect" onchange="onCinemaOrTimeChange()" class="w-full bg-slate-800 border border-slate-700 rounded-lg text-xs font-medium px-3 py-2 text-slate-200 focus:outline-none focus:border-bmsRed">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Showtime Slots Bar -->
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-2">Available Showtimes</label>
+            <div id="showtimeSlots" class="flex flex-wrap gap-2">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Legend Indicator -->
+          <div class="flex items-center justify-center gap-6 text-xs bg-slate-800/40 py-2.5 px-4 rounded-lg border border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded-t-md bg-slate-700 border border-slate-600"></span>
+              <span class="text-slate-400">Available</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded-t-md bg-emerald-500 border border-emerald-600"></span>
+              <span class="text-slate-400">Selected</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded-t-md bg-slate-900 border border-slate-950 opacity-60"></span>
+              <span class="text-slate-400">Sold Out</span>
+            </div>
+          </div>
+
+          <!-- Curved Cinema Screen Display -->
+          <div class="w-full py-4 my-2 flex flex-col items-center">
+            <div class="cinema-screen w-3/4 h-3 bg-gradient-to-b from-sky-400 to-sky-600 rounded-t-lg mb-2"></div>
+            <span class="text-[10px] tracking-widest uppercase font-semibold text-slate-500">All eyes this way (Screen)</span>
+          </div>
+
+          <!-- Auditorium Seat Container -->
+          <div id="auditoriumGrid" class="w-full overflow-x-auto py-4 flex flex-col items-center space-y-4">
+            <!-- Dynamically Rendered Tier & Rows -->
+          </div>
+        </div>
+
+        <!-- Right 4 Cols: Dynamic Booking Order Summary Panel -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 sticky top-20">
+            <h3 class="font-bold text-base text-white border-b border-slate-800 pb-3 flex items-center justify-between">
+              <span>Booking Summary</span>
+              <span id="summaryTicketCount" class="text-xs bg-bmsRed/20 text-bmsRed px-2 py-0.5 rounded-full font-semibold">0 Seats</span>
+            </h3>
+
+            <!-- Selected Movie Brief Card -->
+            <div class="flex gap-3 items-center">
+              <img id="selectedMovieImg" src="" alt="Poster" class="w-14 h-20 object-cover rounded-lg shadow-md border border-slate-700" />
+              <div class="space-y-1">
+                <h4 id="selectedMovieTitle" class="font-bold text-sm text-white leading-tight">Movie Title</h4>
+                <p id="selectedMovieGenre" class="text-xs text-slate-400">Genre</p>
+                <div class="flex items-center gap-2 text-[11px] text-slate-300">
+                  <span id="selectedMovieLang" class="bg-slate-800 px-1.5 py-0.5 rounded">Hindi</span>
+                  <span id="selectedMovieCert" class="bg-slate-800 px-1.5 py-0.5 rounded">UA</span>
+                  <span id="selectedMovieRating" class="text-amber-400 font-bold"><i class="fa-solid fa-star"></i> 8.5</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-xs space-y-1 bg-slate-800/40 p-3 rounded-lg border border-slate-800">
+              <div class="flex justify-between text-slate-400">
+                <span>Cinema:</span>
+                <span id="summaryCinema" class="text-slate-200 font-medium truncate max-w-[170px]">PVR</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>Date & Time:</span>
+                <span id="summaryShowtime" class="text-slate-200 font-medium">05:00 PM</span>
+              </div>
+            </div>
+
+            <!-- Seat IDs Pills -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-semibold text-slate-400 uppercase">Selected Seats</label>
+              <div id="selectedSeatsPills" class="flex flex-wrap gap-1.5 min-h-[36px] bg-slate-800/60 p-2 rounded-lg border border-slate-800">
+                <span class="text-xs text-slate-500 italic">No seats selected yet</span>
+              </div>
+            </div>
+
+            <!-- Price Breakdown Table -->
+            <div class="border-t border-slate-800 pt-3 space-y-2 text-xs">
+              <div class="flex justify-between text-slate-400">
+                <span>Subtotal Ticket Amount</span>
+                <span id="subtotalPrice" class="font-semibold text-slate-200">₹0</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>GST & Convenience Fee (18%)</span>
+                <span id="gstPrice" class="font-semibold text-slate-200">₹0</span>
+              </div>
+              <div class="flex justify-between text-sm font-bold text-white border-t border-slate-800 pt-2">
+                <span>Total Amount</span>
+                <span id="grandTotalPrice" class="text-emerald-400 text-base">₹0</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-2 pt-2">
+              <button id="proceedBtn" onclick="openCheckoutModal()" disabled class="w-full bg-slate-800 text-slate-500 font-bold py-3 rounded-xl transition duration-200 cursor-not-allowed flex items-center justify-center gap-2">
+                <i class="fa-solid fa-lock text-xs"></i> Select Seats to Proceed
+              </button>
+              <button onclick="clearSelectedSeats()" class="w-full text-xs text-slate-400 hover:text-rose-400 py-1 transition">
+                Clear Seat Selection
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: AUTHENTICATION (SIGN IN / SIGN UP) -->
+  <div id="authModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+      <!-- Modal Header / Tabs -->
+      <div class="flex border-b border-slate-800 text-sm font-bold text-center">
+        <button id="tabSignIn" onclick="switchAuthTab('signin')" class="flex-1 py-3 text-bmsRed border-b-2 border-bmsRed transition">Sign In</button>
+        <button id="tabSignUp" onclick="switchAuthTab('signup')" class="flex-1 py-3 text-slate-400 border-b-2 border-transparent hover:text-white transition">Create Account</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <h3 id="authModalTitle" class="text-lg font-bold text-white text-center">Sign In to MoviesBuzz</h3>
+        <p class="text-xs text-slate-400 text-center">Manage tickets, unlock rewards & seamless booking experience.</p>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3 pt-2">
+          <div id="nameField" class="hidden">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+            <input type="text" id="authName" placeholder="John Doe" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-bmsRed" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+            <input type="email" id="authEmail" required placeholder="user@example.com" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-bmsRed" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+            <input type="password" id="authPassword" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-bmsRed" />
+          </div>
+
+          <button type="submit" id="authSubmitBtn" class="w-full bg-bmsRed hover:bg-bmsRedHover text-white font-bold py-2.5 rounded-lg text-xs transition shadow-lg shadow-bmsRed/20">
+            Sign In
+          </button>
+        </form>
+
+        <div class="relative py-2">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-800"></div></div>
+          <div class="relative flex justify-center text-[10px] uppercase"><span class="bg-slate-900 px-2 text-slate-500">Or continue as</span></div>
+        </div>
+
+        <button onclick="loginAsGuest()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold py-2 rounded-lg text-xs transition">
+          Guest User
+        </button>
+
+        <div class="text-center pt-2">
+          <button onclick="closeAuthModal()" class="text-xs text-slate-500 hover:text-slate-300 transition">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: TICKET CONFIRMATION & QR CODE -->
+  <div id="checkoutModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative">
+      <div class="bg-gradient-to-r from-bmsRed to-rose-600 p-4 text-white text-center">
+        <i class="fa-solid fa-circle-check text-3xl mb-1"></i>
+        <h3 class="font-extrabold text-lg">Booking Confirmed!</h3>
+        <p class="text-xs text-rose-100">Ticket sent to registered email</p>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700 space-y-3 relative">
+          <!-- Ticket Notch Left & Right -->
+          <div class="ticket-cutout-left"></div>
+          <div class="ticket-cutout-right"></div>
+
+          <div class="flex gap-3 items-center border-b border-slate-700/60 pb-3">
+            <img id="modalMovieImg" src="" alt="Poster" class="w-12 h-16 object-cover rounded-md" />
+            <div>
+              <h4 id="modalMovieTitle" class="font-bold text-sm text-white">Movie Title</h4>
+              <p id="modalLanguage" class="text-xs text-slate-400">Hindi • UA</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase">Cinema</span>
+              <span id="modalCinema" class="font-semibold text-slate-200">PVR</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase">Showtime</span>
+              <span id="modalShowtime" class="font-semibold text-slate-200">Today, 05:00 PM</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase">Seats</span>
+              <span id="modalSeats" class="font-bold text-emerald-400">A1, A2</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase">Total Paid</span>
+              <span id="modalPaidAmount" class="font-bold text-white">₹518</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-700/60 flex items-center justify-between">
+            <div>
+              <span id="modalBookingId" class="text-[11px] font-mono font-bold text-slate-400">BOOKID: BUZZ-849204</span>
+              <p class="text-[10px] text-slate-500">Show this QR code at cinema entry</p>
+            </div>
+            <!-- Mock QR Code Box -->
+            <div class="w-12 h-12 bg-white rounded p-1 flex items-center justify-center">
+              <i class="fa-solid fa-qrcode text-slate-900 text-3xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="finishBooking()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20">
+          Done & Return to Home
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 z-50 bg-slate-800 border border-slate-700 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2">
+    <i class="fa-solid fa-circle-info text-bmsRed"></i>
+    <span id="toastMsg">Notification message</span>
+  </div>
+
+</body>
+</html>

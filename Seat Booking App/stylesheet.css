@@ -1,0 +1,93 @@
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+width: 6px;
+height: 6px;
+}
+::-webkit-scrollbar-track {
+background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+background: #334155;
+border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+background: #475569;
+}
+
+/* Cinema Screen Glow Effect */
+.cinema-screen {
+box-shadow: 0px 15px 35px rgba(56, 189, 248, 0.35);
+border-top: 5px solid #38bdf8;
+transform: perspective(300px) rotateX(-12deg);
+}
+
+/* Seat Styling & Interactive States */
+.seat {
+width: 26px;
+height: 24px;
+margin: 3px;
+border-top-left-radius: 6px;
+border-top-right-radius: 6px;
+border-bottom-left-radius: 3px;
+border-bottom-right-radius: 3px;
+font-size: 10px;
+font-weight: 600;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+user-select: none;
+}
+
+@media (max-width: 640px) {
+.seat {
+width: 21px;
+height: 20px;
+font-size: 8px;
+margin: 2px;
+}
+}
+
+.seat.available {
+background-color: #334155;
+color: #94a3b8;
+border: 1px solid #475569;
+}
+.seat.available:hover {
+background-color: #1EA83C;
+color: #ffffff;
+border-color: #1EA83C;
+transform: scale(1.15);
+box-shadow: 0 0 10px rgba(30, 168, 60, 0.5);
+}
+
+.seat.selected {
+background-color: #1EA83C;
+color: #ffffff;
+border: 1px solid #168a30;
+transform: scale(1.1);
+box-shadow: 0 0 8px rgba(30, 168, 60, 0.6);
+}
+
+.seat.occupied {
+background-color: #1e293b;
+color: #475569;
+border: 1px solid #0f172a;
+cursor: not-allowed;
+opacity: 0.6;
+}
+
+/* Ticket Cutout Side Ornaments */
+.ticket-cutout-left,
+.ticket-cutout-right {
+width: 20px;
+height: 20px;
+background-color: #0f172a;
+border-radius: 50%;
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+}
+.ticket-cutout-left { left: -10px; }
+.ticket-cutout-right { right: -10px; }
